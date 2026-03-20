@@ -24,5 +24,6 @@
        {{post.body|truncatewords:5|linebreaks}}
      
      {% endfor %}
+     {% include "blog/pagination.html" with page=page_obj %}
 </body>
 </html>
