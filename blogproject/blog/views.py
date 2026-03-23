@@ -2,26 +2,31 @@ from django.shortcuts import render,get_object_or_404
 from blog.models import Post
 from django.core.paginator import Paginator,EmptyPage,PageNotAnInteger
 from django.views.generic import ListView
-from blog.forms import EmailPostForm
+from blog.forms import EmailPostForm,CommentForm
+from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
 # Create your views here.
-def post_share(request, post_id):
+
+@require_POST
+def post_comment(request, post_id):
     post = get_object_or_404(
     Post,
     id=post_id,
     status=Post.Status.PUBLISHED
     )
-    if request.method == 'POST':
-        form = EmailPostForm(request.POST)
+    comment = None
+    form = CommentForm(data=request.POST)
     if form.is_valid():
-        cd = form.cleaned_data
-    else:
-        form = EmailPostForm()
-        return render(
+        comment = form.save(commit=False)
+        comment.post = post
+        comment.save()
+    return render(
         request,
-        'blog/share.html',
+        'blog/comment.html',
         {
         'post': post,
-        'form': form
+        'form': form,
+        'comment': comment
         }
     )
 
@@ -43,14 +48,68 @@ def post_list_view(request):
     except EmptyPage:
         posts = paginator.page(paginator.num_pages)
     return render(request,"blog/post_list.html",{"posts":posts})
+
 def post_detail(request, id):
     post = get_object_or_404(
         Post,
         id=id,
         status=Post.Status.PUBLISHED
     )
+
+    comments = post.comments.filter(active=True)
+    form = CommentForm()
     return render(
         request,
         'blog/detail.html',
-        {'post': post}
+        {
+        'post': post,
+        'comments': comments,
+        'form': form,
+        }
     )
+    
+def post_share(request, post_id):
+    post = get_object_or_404(
+    Post,
+    id=post_id,
+    status=Post.Status.PUBLISHED
+    )
+    sent = False
+    to = None
+    if request.method == 'POST':
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            to = cd['to']
+            post_url = request.build_absolute_uri(
+            post.get_absolute_url()
+            )
+            subject = (
+            f"{cd['name']} ({cd['email']}) "
+            f"recommends you read {post.title}"
+            )
+            message = (
+            f"Read {post.title} at {post_url}\n\n"
+            f"{cd['name']}\'s comments: {cd['comments']}"
+            )
+            send_mail(
+            subject=subject,
+            message=message,
+            from_email=None,
+            recipient_list=[cd['to']]
+            )
+            sent = True
+    
+    else:
+        form = EmailPostForm()
+        return render(
+        request,
+        'blog/share.html',
+        {
+        'post': post,
+        'form': form,
+        'sent':sent,
+        'to':to,
+        }
+    )
+

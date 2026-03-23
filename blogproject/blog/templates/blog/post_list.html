@@ -11,9 +11,8 @@
 </head>
 <body>
     <h1>My blog</h1>
-   
-     {% for post in posts  %}
-     <h2>
+    {% for post in posts  %}
+    <h2>
         <a href="{{ post.get_absolute_url }}">
         {{ post.title }}
         </a>
@@ -21,9 +20,8 @@
         <p class="date">
         Published {{ post.publish }} by {{ post.author }}
         </p>
-       {{post.body|truncatewords:5|linebreaks}}
-     
-     {% endfor %}
-     {% include "blog/pagination.html" with page=page_obj %}
+    {{post.body|truncatewords:5|linebreaks}}
+    {% endfor %}
+    {% include "blog/pagination.html" with page=page_obj %}
 </body>
 </html>
