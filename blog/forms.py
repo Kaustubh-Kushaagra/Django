@@ -1,0 +1,16 @@
+from django import forms
+from blog.models import Comment
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['name', 'email', 'body']
+
+class EmailPostForm(forms.Form):
+  name = forms.CharField(max_length=25)
+  email = forms.EmailField() # from gmailaddress
+  to = forms.EmailField() # to gmail address
+  comments = forms.CharField(
+    required=False,#optional
+    widget=forms.Textarea # it provides textarea
+)

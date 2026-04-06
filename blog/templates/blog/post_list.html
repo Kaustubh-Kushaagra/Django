@@ -1,0 +1,55 @@
+{% load blog_tags %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My First blog web page</title>
+    <style>
+        .date{
+            color:rgb(175, 2, 123);
+        }
+    </style>
+
+</head>
+<body>
+    <h1>My blog</h1>
+    {% if tag %}
+    <h2>Posts tagged with "{{ tag.name }}"</h2>
+    {% endif %}
+    {% for post in posts  %}
+    <h2>
+        <a href="{{ post.get_absolute_url }}">
+        {{ post.title }}
+        </a>
+        </h2>
+        <p class="tags">
+            Tags:
+            {% for tag in post.tags.all %}
+                <a href="{% url "blog:post_list_by_tag" tag.slug %}">
+            {{ tag.name }}
+        </a>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+
+        </p>
+        <p class="date">
+        Published {{ post.publish }} by {{ post.author }}
+        </p>
+        
+    {{ post.body|markdown|truncatewords_html:30 }}
+    <hr>
+    {% endfor %}
+    I've written {% total_posts %} posts so far.
+    <h3>Latest posts</h3>
+    {% show_latest_posts %}
+    <h3>Most commented posts</h3>
+    {% get_most_commented_posts as most_commented_posts %}
+    <ul>
+        {% for post in most_commented_posts %}
+    <li>
+    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+    </li>
+    {% endfor %}
+    </ul>
+    <hr>
+    {% include "blog/pagination.html" with page=posts %}
+</body>
+</html>

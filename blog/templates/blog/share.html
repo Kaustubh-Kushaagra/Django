@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<body>
+     {% if sent %}
+<h1>E-mail successfully sent</h1>
+<p>
+"{{ post.title }}" was successfully sent to {{ to }}.
+</p>
+{% else %}
+<h1>Share "{{ post.title }}" by e-mail</h1>
+<form method="post">
+{{ form.as_p }}
+{% csrf_token %}
+<input type="submit" value="Send e-mail">
+</form>
+{% endif %}
+</body>
+</html>
